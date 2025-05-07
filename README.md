@@ -69,3 +69,8 @@ helpdesk-backend/
   - `test_service/`: 服务测试（包含.gitkeep占位符）
 - `alembic/`: 数据库迁移文件
   - `versions/`: 迁移版本文件（包含.gitkeep占位符）
+
+### 相关链接
+
+- [Napcat API接口](https://napcat.apifox.cn)
+- [Piccolo文档](https://piccolo-orm.com)
