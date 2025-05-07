@@ -73,4 +73,4 @@ helpdesk-backend/
 ### 相关链接
 
 - [Napcat API接口](https://napcat.apifox.cn)
-- [Piccolo文档](https://piccolo-orm.com)
+- [SQLAlchemy文档](https://www.sqlalchemy.org)
