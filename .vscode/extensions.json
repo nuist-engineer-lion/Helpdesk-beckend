@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "saoudrizwan.claude-dev",
+    "streetsidesoftware.code-spell-checker",
+    "vivaxy.vscode-conventional-commits",
+    "github.copilot",
+    "github.copilot-chat",
+    "esbenp.prettier-vscode",
+    "ms-python.vscode-pylance",
+    "ms-python.python",
+    "ms-python.debugpy"
+  ]
+}
