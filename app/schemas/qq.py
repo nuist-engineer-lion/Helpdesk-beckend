@@ -1,13 +1,12 @@
 from typing import Literal, Annotated
-from pydantic import BaseModel, Field, field_validator, AnyHttpUrl
+from pydantic import BaseModel, Field, field_validator, AnyHttpUrl, TypeAdapter
 from datetime import datetime
 
 class OneBotEventBase(BaseModel):
     time: int
     self_id: int
 
-    class Config:
-        extra = "ignore"
+    model_config = {"extra": "ignore"}
     
     @field_validator('time')
     @classmethod
@@ -53,23 +52,20 @@ class ImageData(BaseModel):
     sub_type: Annotated[Literal[0, 1], '0 is normal image while 1 is a meme']
     url: AnyHttpUrl  # 使用 AnyHttpUrl 类型确保 URL 格式有效
 
-    class Config:
-        extra = "ignore"
+    model_config = {"extra": "ignore"}
 
 class VideoData(BaseModel):
     file: str
     url: AnyHttpUrl  # 使用 AnyHttpUrl 类型确保 URL 格式有效
 
-    class Config:
-        extra = "ignore"
+    model_config = {"extra": "ignore"}
 
 class FileData(BaseModel):
     file: str
     file_id: str
     url: AnyHttpUrl | None  # 私聊没有群聊有，使用 AnyHttpUrl 类型确保 URL 格式有效
 
-    class Config:
-        extra = "ignore"
+    model_config = {"extra": "ignore"}
 
 class AtData(BaseModel):
     qq: int | Literal["all"]
@@ -106,6 +102,7 @@ class ForwardMessageSegment(BaseModel):
     data: ForwardData
 
 MessageSegment = Annotated[TextMessageSegment | ReplyMessageSegment | ImageMessageSegment | VideoMessageSegment | FileMessageSegment | AtMessageSegment | ForwardMessageSegment, Field(discriminator="type")]
+MessageSegmentModel: TypeAdapter[MessageSegment] = TypeAdapter(MessageSegment)
 
 class MessageBase(OneBotEventBase):
     post_type: Literal['message'] = 'message'
@@ -124,5 +121,11 @@ class GroupMessage(MessageBase):
     group_id: int
 
 Message = Annotated[PrivateMessage | GroupMessage, Field(discriminator="message_type")]
+MessageModel: TypeAdapter[Message] = TypeAdapter(Message)
 
 WsMessage = Annotated[MetaEvent | Message, Field(discriminator="post_type")]
+WsMessageModel: TypeAdapter[WsMessage] = TypeAdapter(WsMessage)
+
+setattr(MessageSegmentModel, "model_validate", MessageSegmentModel.validate_python)
+setattr(MessageModel, "model_validate", MessageModel.validate_python)
+setattr(WsMessageModel, "model_validate", WsMessageModel.validate_python)
