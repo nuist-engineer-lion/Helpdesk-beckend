@@ -25,7 +25,11 @@ async def publish(e: EventType):
 async def run_main(tg: anyio.abc.TaskGroup):
     while True:
         e = await queue.get()
-
+        logger.debug("New event got!")
+        for etype, handler_list in handlers.items():
+            if enhanced_isinstance(e, etype):
+                for handler in handler_list:
+                    tg.start_soon(handler, e)
 
 @asynccontextmanager
 async def lifespan(*_, **__: dict[str, Any]):
