@@ -1,6 +1,7 @@
 from typing import Any
 from json import JSONDecodeError
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from anyio import create_task_group, move_on_after
 from loguru import logger
 from pydantic import ValidationError
 # from app.core.config import get_settings, Settings
@@ -15,9 +16,15 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket) -> None | int:
         logger.debug("Receiving a new ws connection...")
         await websocket.accept()
+        connect_event_data: dict[str, Any] | None = None
         try:
             logger.debug("Waiting for the connect meta event message...")
-            connect_event_data: dict[str, Any] = await websocket.receive_json()
+            async with create_task_group() as _:
+                with move_on_after(1) as scope:
+                    connect_event_data = await websocket.receive_json()
+                if(scope.cancelled_caught):
+                    logger.warning("New Ws Connection Timeout after 1 sec no initial message!")
+                    return
         except JSONDecodeError:
             logger.warning("The new ws connection sending non-json initial message...")
             await websocket.close()

@@ -1,0 +1,1 @@
+from .qq import WsMessage

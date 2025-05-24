@@ -1,3 +1,7 @@
-from app.schemas.qq import WsMessageModel
+from loguru import logger
+from pydantic import BaseModel
 
-a = WsMessageModel.validate_python([1])
+class Z(BaseModel):
+    t: int = 1
+
+logger.debug(f"sss{Z()}")
