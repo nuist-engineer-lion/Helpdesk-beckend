@@ -74,3 +74,25 @@ helpdesk-backend/
 
 - [Napcat API接口](https://napcat.apifox.cn)
 - [SQLAlchemy文档](https://www.sqlalchemy.org)
+
+### 请求管理器架构
+```mermaid
+sequenceDiagram
+    participant App as 应用程序
+    participant RM as RequestManager
+    participant WS as WebSocket
+    participant Server as 远程服务器
+    participant EM as EventManager
+
+    App->>RM: send_request(action, params)
+    RM->>RM: 生成唯一echo
+    RM->>RM: 创建Future并存储
+    RM->>WS: 发送JSON请求
+    WS->>Server: WebSocket消息
+    Server->>WS: 响应消息
+    WS->>EM: 发布响应事件
+    EM->>RM: 响应处理器接收事件
+    RM->>RM: 根据echo匹配Future
+    RM->>RM: 设置Future结果
+    RM->>App: 返回响应数据
+```

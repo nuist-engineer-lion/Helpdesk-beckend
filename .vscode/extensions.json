@@ -9,6 +9,7 @@
     "ms-python.vscode-pylance",
     "ms-python.python",
     "ms-python.debugpy",
-    "tamasfe.even-better-toml"
+    "tamasfe.even-better-toml",
+    "bierner.markdown-mermaid"
   ]
 }
