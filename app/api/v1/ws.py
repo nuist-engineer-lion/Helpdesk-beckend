@@ -5,7 +5,8 @@ from anyio import create_task_group, move_on_after
 from loguru import logger
 from pydantic import ValidationError
 # from app.core.config import get_settings, Settings
-from app.schemas.qq import WsMessageModel, PrivateMessage, ConnectEvent
+from app.schemas.qq import WsMessageModel, GroupMessage, ConnectEvent
+from app.schemas import OneBotResponse
 from app.core.event_manager import publish, register
 
 router = APIRouter(prefix='/ws')
@@ -20,7 +21,7 @@ class ConnectionManager:
         connect_event_data: dict[str, Any] | None = None
         try:
             logger.debug("Waiting for the connect meta event message...")
-            async with create_task_group() as _:
+            async with create_task_group():
                 with move_on_after(1) as scope:
                     connect_event_data = await websocket.receive_json()
                 if(scope.cancelled_caught):
@@ -90,13 +91,23 @@ async def ws_endpoint(websocket: WebSocket):
         return
     try:
         while True:
-            data = await websocket.receive_json()
-            event = WsMessageModel.validate_python(data)
+            try:
+                data = await websocket.receive_json()
+            except JSONDecodeError:
+                logger.warning("Receiving non-json ws message.")
+                continue
+            if 'echo' in data:
+                event = OneBotResponse.model_validate(data)
+            elif 'post_type' in data:
+                event = WsMessageModel.validate_python(data)
+            else:
+                logger.warning("Receiving non-protocol ws message.")
+                continue
             await publish(event)
     except WebSocketDisconnect:
         await manager.disconnect(bot_id)
 
 
 @register
-async def handler_ws_message(e: PrivateMessage):
+async def handler_ws_message(e: GroupMessage):
     logger.info(e)

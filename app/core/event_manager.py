@@ -7,10 +7,10 @@ from asyncio import Queue, iscoroutinefunction
 import anyio
 import anyio.abc
 from loguru import logger
-from app.schemas import WsMessage
+from app.schemas import WsMessage, OneBotResponse
 from app.core.utils import enhanced_isinstance, MutableCallable
 
-EventType = WsMessage
+EventType = WsMessage | OneBotResponse
 HandlerType = MutableCallable[EventType, Coroutine[Any, Any, Any]]
 
 queue: Queue[EventType] = Queue()

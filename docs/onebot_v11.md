@@ -429,3 +429,46 @@
   "group_id": 757951413
 }
 ```
+
+## 私聊消息 发送
+### 请求
+```json
+{
+    "action": "send_private_msg",
+    "params": {
+      "user_id": "5079132",
+      "message": [
+          {
+            "type": "text",
+            "data": {
+                "text": "napcat"
+            }
+          }
+      ]
+    },
+    "echo": "123"
+}
+```
+### 响应
+```json
+{
+  "status": "ok",
+  "retcode": 0,
+  "data": {
+    "message_id": 123039305
+  },
+  "message": "",
+  "wording": "",
+  "echo": "123"
+}
+```
+```json
+{
+  "status": "failed",
+  "retcode": 1200,
+  "data": null,
+  "message": "无法获取用户信息",
+  "wording": "无法获取用户信息",
+  "echo": "123"
+}
+```
