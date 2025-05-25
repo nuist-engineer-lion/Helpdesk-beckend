@@ -5,7 +5,8 @@ from anyio import create_task_group, move_on_after
 from loguru import logger
 from pydantic import ValidationError
 # from app.core.config import get_settings, Settings
-from app.schemas.qq import WsMessageModel, ConnectEvent
+from app.schemas.qq import WsMessageModel, PrivateMessage, ConnectEvent
+from app.core.event_manager import publish, register
 
 router = APIRouter(prefix='/ws')
 
@@ -89,7 +90,13 @@ async def ws_endpoint(websocket: WebSocket):
         return
     try:
         while True:
-            data = await websocket.receive_text()
-            logger.debug(data)
+            data = await websocket.receive_json()
+            event = WsMessageModel.validate_python(data)
+            await publish(event)
     except WebSocketDisconnect:
         await manager.disconnect(bot_id)
+
+
+@register
+async def handler_ws_message(e: PrivateMessage):
+    logger.info(e)

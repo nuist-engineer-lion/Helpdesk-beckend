@@ -2,19 +2,19 @@ import inspect
 from inspect import Parameter
 from contextlib import asynccontextmanager
 from typing import Any
-from collections.abc import Callable, Coroutine
+from collections.abc import Coroutine
 from asyncio import Queue, iscoroutinefunction
 import anyio
 import anyio.abc
 from loguru import logger
 from app.schemas import WsMessage
-from app.core.utils import enhanced_isinstance
+from app.core.utils import enhanced_isinstance, MutableCallable
 
 EventType = WsMessage
-HandlerType = Callable[[EventType], Coroutine[Any, Any, Any]]
+HandlerType = MutableCallable[EventType, Coroutine[Any, Any, Any]]
 
 queue: Queue[EventType] = Queue()
-handlers: dict[EventType, list[HandlerType]] = {}
+handlers: dict[type[EventType], list[HandlerType]] = {}
 
 async def publish(e: EventType):
     if enhanced_isinstance(e, EventType):
@@ -25,19 +25,21 @@ async def publish(e: EventType):
 async def run_main(tg: anyio.abc.TaskGroup):
     while True:
         e = await queue.get()
-        logger.debug("New event got!")
+        logger.debug("New event got! Finding handler...")
         for etype, handler_list in handlers.items():
             if enhanced_isinstance(e, etype):
                 for handler in handler_list:
                     tg.start_soon(handler, e)
 
 @asynccontextmanager
-async def lifespan(*_, **__: dict[str, Any]):
+async def lifespan(*_: Any, **__: dict[str, Any]):
     async with anyio.create_task_group() as tg:
         with anyio.CancelScope(shield=True):
             tg.start_soon(run_main, tg)
+            logger.info("Event loop start!")
             yield
             tg.cancel_scope.cancel()
+            logger.info("Event loop cancel")
 
 def register(handler: HandlerType):
     if not inspect.isfunction(handler):
