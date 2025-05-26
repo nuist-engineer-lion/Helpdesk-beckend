@@ -105,7 +105,7 @@ MessageSegment = Annotated[TextMessageSegment | ReplyMessageSegment | ImageMessa
 MessageSegmentModel: TypeAdapter[MessageSegment] = TypeAdapter(MessageSegment)
 
 class MessageBase(OneBotEventBase):
-    post_type: Literal['message'] = 'message'
+    post_type: Literal['message', 'message_sent'] = 'message'
     user_id: int
     message_id: int
     raw_message: str

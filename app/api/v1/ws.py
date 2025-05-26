@@ -5,7 +5,7 @@ from anyio import create_task_group, move_on_after
 from loguru import logger
 from pydantic import ValidationError
 # from app.core.config import get_settings, Settings
-from app.schemas.qq import WsMessageModel, GroupMessage, ConnectEvent
+from app.schemas.qq import WsMessageModel, PrivateMessage, ConnectEvent
 from app.schemas import OneBotResponse
 from app.core.event_manager import publish, register
 
@@ -96,10 +96,15 @@ async def ws_endpoint(websocket: WebSocket):
             except JSONDecodeError:
                 logger.warning("Receiving non-json ws message.")
                 continue
+            logger.debug(data)
             if 'echo' in data:
                 event = OneBotResponse.model_validate(data)
             elif 'post_type' in data:
-                event = WsMessageModel.validate_python(data)
+                try:
+                    event = WsMessageModel.validate_python(data)
+                except ValidationError:
+                    logger.warning(f"不支持的消息类型：{data}")
+                    continue
             else:
                 logger.warning("Receiving non-protocol ws message.")
                 continue
@@ -109,5 +114,5 @@ async def ws_endpoint(websocket: WebSocket):
 
 
 @register
-async def handler_ws_message(e: GroupMessage):
+async def handler_ws_message(e: PrivateMessage):
     logger.info(e)
