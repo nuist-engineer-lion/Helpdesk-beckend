@@ -48,15 +48,17 @@ class ReplyData(BaseModel):
     id: int
 
 class ImageData(BaseModel):
-    file: str
+    file: str # 如果是接收，则通常是MD5.jpg。如果是发送，"file://D:/a.jpg"、"http://xxx.png"、"base64://xxxxxxxx"
     sub_type: Annotated[Literal[0, 1], '0 is normal image while 1 is a meme']
-    url: AnyHttpUrl  # 使用 AnyHttpUrl 类型确保 URL 格式有效
+    url: AnyHttpUrl | None  # 使用 AnyHttpUrl 类型确保 URL 格式有效，如果是发送，可以省略此项
+    file_size: int | None # 如果是发送，可以省略此项
 
     model_config = {"extra": "ignore"}
 
 class VideoData(BaseModel):
-    file: str
-    url: AnyHttpUrl  # 使用 AnyHttpUrl 类型确保 URL 格式有效
+    file: str # 如果是接收，则通常是MD5.mp4。如果是发送，"file://D:/a.jpg"、"http://xxx.png"
+    url: AnyHttpUrl | None  # 使用 AnyHttpUrl 类型确保 URL 格式有效，如果是发送，可以省略此项
+    file_size: int | None # 如果是发送，可以省略此项
 
     model_config = {"extra": "ignore"}
 
